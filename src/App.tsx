@@ -6,8 +6,10 @@ import { useSettings } from './context/SettingsContext';
 import { usePolling } from './hooks/usePolling';
 import { IndexBar } from './components/IndexBar';
 import { Watchlist } from './components/Watchlist';
+import { SectorView } from './components/SectorView';
 import { SearchPanel } from './components/SearchPanel';
 import { SettingsPanel } from './components/SettingsPanel';
+import { NewsFeed } from './components/NewsFeed';
 import { LoadingDots } from './components/LoadingDots';
 import { fetchStockQuotes, fetchIndexQuotes } from './api/sina';
 import { fetchUsStockQuotes } from './api/yahoo';
@@ -15,11 +17,15 @@ import { INDICES } from './utils/constants';
 import { formatRelativeTime } from './utils/formatters';
 import type { StockQuote } from './types';
 
+type TabType = 'watchlist' | 'sector';
+
 function Dashboard() {
   const { items } = useWatchlist();
   const { settings } = useSettings();
+  const [activeTab, setActiveTab] = useState<TabType>('watchlist');
   const [searchOpen, setSearchOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [newsOpen, setNewsOpen] = useState(false);
 
   const codesToFetch = useMemo(() => {
     const codes: string[] = [];
@@ -72,6 +78,9 @@ function Dashboard() {
             PIXEL STOCK
           </h1>
           <div className="flex items-center gap-2">
+            <button onClick={() => setNewsOpen(true)} className="px-3 py-1.5 border-2 border-neutral-600 text-xs hover:border-pixel-amber hover:text-pixel-amber transition-colors">
+              📰 要闻
+            </button>
             <button onClick={() => setSearchOpen(true)} className="px-3 py-1.5 border-2 border-neutral-600 text-xs hover:border-pixel-green hover:text-pixel-green transition-colors">
               🔍 搜索
             </button>
@@ -84,8 +93,23 @@ function Dashboard() {
 
       <IndexBar indices={indices || []} isLoading={indicesLoading} />
 
+      <div className="border-b border-neutral-800 bg-neutral-900">
+        <div className="max-w-7xl mx-auto px-3 flex gap-1">
+          <button onClick={() => setActiveTab('watchlist')} className={`px-4 py-2 text-xs transition-colors ${activeTab === 'watchlist' ? 'text-pixel-green border-b-2 border-pixel-green' : 'text-neutral-500 hover:text-neutral-300'}`} style={{ fontFamily: activeTab === 'watchlist' ? "'Press Start 2P', monospace" : 'inherit' }}>
+            自选股
+          </button>
+          <button onClick={() => setActiveTab('sector')} className={`px-4 py-2 text-xs transition-colors ${activeTab === 'sector' ? 'text-pixel-green border-b-2 border-pixel-green' : 'text-neutral-500 hover:text-neutral-300'}`} style={{ fontFamily: activeTab === 'sector' ? "'Press Start 2P', monospace" : 'inherit' }}>
+            板块
+          </button>
+        </div>
+      </div>
+
       <main className="flex-1">
-        <Watchlist quotes={allQuotes} isLoading={isLoading} isError={isError} />
+        {activeTab === 'watchlist' ? (
+          <Watchlist quotes={allQuotes} isLoading={isLoading} isError={isError} />
+        ) : (
+          <SectorView />
+        )}
       </main>
 
       <footer className="border-t-2 border-neutral-700 bg-neutral-900">
@@ -104,6 +128,7 @@ function Dashboard() {
 
       <SearchPanel isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       <SettingsPanel isOpen={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      <NewsFeed isOpen={newsOpen} onClose={() => setNewsOpen(false)} />
     </div>
   );
 }
