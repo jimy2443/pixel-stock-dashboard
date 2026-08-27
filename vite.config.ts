@@ -1,10 +1,10 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
-  base: '/pixel-stock-dashboard/',
+  base: mode === 'production' ? '/pixel-stock-dashboard/' : '/',
   server: {
     port: 7100,
   },
-})
+}))
