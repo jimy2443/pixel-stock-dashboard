@@ -1,0 +1,1 @@
+export { fetchUsStockQuotes } from './sina';
